@@ -1,0 +1,35 @@
+version: '3.1'
+
+services:
+  goose:
+    image: goose:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.goose
+    volumes:
+      - ../migrations:/migrations
+    environment:
+      - GOOSE_DRIVER=mysql
+      - GOOSE_DBSTRING=root:root@(chatdb:3306)/webchat
+    command: ['goose', 'up']
+    depends_on:
+      - chatdb
+    networks:
+      webchat:
+
+  chatdb:
+    image: mariadb:10.5.6-focal
+    ports:
+      - 127.0.0.1:3306:3306
+    restart: always
+    environment:
+        MYSQL_USER: root
+        MYSQL_DATABASE: webchat
+        MYSQL_PASSWORD: root
+        MYSQL_ROOT_PASSWORD: root
+    networks:
+      webchat:
+
+networks:
+  webchat:
+    driver: bridge
